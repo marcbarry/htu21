@@ -77,7 +77,7 @@ journalctl -u htu21 -f
 ```bash
 sudo nano /etc/systemd/system/htu21.service
 # in the [Service] section, set:
-Environment=PORT=273
+Environment=HTU21_PORT=273
 ```
 
 Reload and restart:
