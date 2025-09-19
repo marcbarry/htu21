@@ -19,6 +19,9 @@ jobs:
     permissions:
       contents: write
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rid: [linux-arm, linux-arm64]
     steps:
       - uses: actions/checkout@v4
 
@@ -26,42 +29,35 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Publish (linux-arm, self-contained single file)
+      - name: Publish (${{ matrix.rid }}, self-contained single file)
         run: |
           dotnet publish "$PROJECT_PATH" \
             -c "$CONFIGURATION" \
-            -r linux-arm \
-            -o ./publish/linux-arm \
+            -r ${{ matrix.rid }} \
+            -o ./publish/${{ matrix.rid }} \
             --self-contained true \
             -p:PublishSingleFile=true \
             -p:IncludeNativeLibrariesForSelfExtract=true \
             -p:AssemblyName=${{ env.ARTIFACT_NAME }}
-          chmod +x ./publish/linux-arm/${{ env.ARTIFACT_NAME }}
+          chmod +x ./publish/${{ matrix.rid }}/${{ env.ARTIFACT_NAME }}
 
       - name: Add service + installer
         run: |
-          cp ./packaging/htu21.service ./publish/linux-arm/
-          cp ./packaging/install.sh ./publish/linux-arm/
-          cp ./packaging/uninstall.sh ./publish/linux-arm/
-          chmod +x ./publish/linux-arm/install.sh
-          chmod +x ./publish/linux-arm/uninstall.sh
+          cp ./packaging/htu21.service ./publish/${{ matrix.rid }}/
+          cp ./packaging/install.sh ./publish/${{ matrix.rid }}/
+          cp ./packaging/uninstall.sh ./publish/${{ matrix.rid }}/
+          chmod +x ./publish/${{ matrix.rid }}/install.sh
+          chmod +x ./publish/${{ matrix.rid }}/uninstall.sh
 
       - name: Package tarball
         run: |
-          mkdir -p ./staging/htu21-linux-arm
-          cp ./publish/linux-arm/${{ env.ARTIFACT_NAME }} ./staging/htu21-linux-arm/
-          cp ./publish/linux-arm/htu21.service ./staging/htu21-linux-arm/
-          cp ./publish/linux-arm/install.sh ./staging/htu21-linux-arm/
-          cp ./publish/linux-arm/uninstall.sh ./staging/htu21-linux-arm/
-          tar -C ./staging -czf ./htu21-linux-arm.tar.gz htu21-linux-arm
+          mkdir -p ./staging/${{ env.ARTIFACT_NAME }}-${{ matrix.rid }}
+          cp ./publish/${{ matrix.rid }}/* ./staging/${{ env.ARTIFACT_NAME }}-${{ matrix.rid}}/
+          tar -C ./staging -czf ./htu21-${{ matrix.rid }}.tar.gz \
+            ${{ env.ARTIFACT_NAME }}-${{ matrix.rid }}
 
-      - name: Create GitHub Release (auto-tag)
-        uses: softprops/action-gh-release@v2
+      - name: Upload artefact
+        uses: actions/upload-artifact@v4
         with:
-          files: ./htu21-linux-arm.tar.gz
-          tag_name: master-${{ github.run_number }}
-          name: "master build #${{ github.run_number }}"
-          target_commitish: ${{ github.sha }}
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: ${{ env.ARTIFACT_NAME }}-${{ matrix.rid }}
+          path: ./htu21-${{ matrix.rid }}.tar.gz
