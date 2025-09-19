@@ -2,18 +2,16 @@
 
 `htu21` Small HTTP service targeting the Raspberry Pi that reads temperature and humidity from an HTU21D/SHT21 sensor over I²C and makes it available on the network by returning JSON to a simple HTTP API.
 
+Default port: **273** (configurable via `HTU21_PORT` environment variable).
+
 - Endpoints:
   - `GET /` → `{"temperature_c":..,"humidity_percent":..,"timestamp_utc":".."}`
   - `GET /health` → `{"status":"ok"}`
-- Default port: **273** (configurable via `HTU21_PORT` environment variable).
-- Logs one line per request to stdout (captured by `systemd`).
 
 ## Prerequisites
 
-- Raspberry Pi with I²C enabled:  
-  `sudo raspi-config` → *Interface Options* → *I2C* → Enable
-- User in `i2c` group:  
-  `sudo usermod -aG i2c pi` then reboot
+- Raspberry Pi with I²C enabled: (`sudo raspi-config` → *Interface Options* → *I2C* → Enable)
+- Check your user is in the `i2c` group.
 - Wiring:  
   - VCC → 3.3V (pin 1)
   - GND → GND (pin 9)
