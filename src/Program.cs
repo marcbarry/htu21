@@ -1,26 +1,26 @@
-using System;
 using System.Device.I2c;
 using System.Net;
 using System.Text;
-using System.Threading;
 
 class Program
 {
     const int I2cBusId = 1;
     const int Address = 0x40;
-    const int Port = 80;
 
     static void Main()
     {
+        var portEnv = Environment.GetEnvironmentVariable("PORT");
+        int port = int.TryParse(portEnv, out var p) ? p : 273;
+
         // Create I²C device
         var settings = new I2cConnectionSettings(I2cBusId, Address);
         using var device = I2cDevice.Create(settings);
 
         // Start HTTP server
         var listener = new HttpListener();
-        listener.Prefixes.Add($"http://*:{Port}/"); // listen on all interfaces
+        listener.Prefixes.Add($"http://*:{port}/"); // listen on all interfaces
         listener.Start();
-        Console.WriteLine($"Listening on http://0.0.0.0:{Port}/ ...");
+        Console.WriteLine($"Listening on http://0.0.0.0:{port}/ ...");
 
         while (true)
         {
