@@ -15,10 +15,12 @@
 - User in `i2c` group:  
   `sudo usermod -aG i2c pi` then reboot
 - Wiring:  
-  - VCC → 3.3V  
-  - GND → GND  
-  - SDA → GPIO2 (pin 3)  
-  - SCL → GPIO3 (pin 5)  
+  - VCC → 3.3V (pin 1)
+  - GND → GND (pin 9)
+  - SDA → GPIO2 (pin 3)
+  - SCL → GPIO3 (pin 5)
+
+![HTU21 sensor wiring diagram](htu21.jpg)
 
 ---
 
