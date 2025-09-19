@@ -48,8 +48,12 @@ jobs:
 
       - name: Package tarball
         run: |
-          tar -C ./publish/linux-arm -czf ./htu21-linux-arm.tar.gz \
-            ${{ env.ARTIFACT_NAME }} htu21.service install.sh uninstall.sh
+          mkdir -p ./staging/htu21-linux-arm
+          cp ./publish/linux-arm/${{ env.ARTIFACT_NAME }} ./staging/htu21-linux-arm/
+          cp ./publish/linux-arm/htu21.service ./staging/htu21-linux-arm/
+          cp ./publish/linux-arm/install.sh ./staging/htu21-linux-arm/
+          cp ./publish/linux-arm/uninstall.sh ./staging/htu21-linux-arm/
+          tar -C ./staging -czf ./htu21-linux-arm.tar.gz htu21-linux-arm
 
       - name: Create GitHub Release (auto-tag)
         uses: softprops/action-gh-release@v2
