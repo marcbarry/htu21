@@ -1,0 +1,16 @@
+[Unit]
+Description=HTU21 JSON HTTP endpoint
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/opt/htu21
+ExecStart=/opt/htu21/htu21
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

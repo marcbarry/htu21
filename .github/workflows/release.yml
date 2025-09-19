@@ -1,0 +1,61 @@
+name: Build & Release
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  CONFIGURATION: Release
+  PROJECT_PATH: ./src/htu21.csproj
+  ARTIFACT_NAME: htu21
+
+jobs:
+  build-release:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Publish (linux-arm, self-contained single file)
+        run: |
+          dotnet publish "$PROJECT_PATH" \
+            -c "$CONFIGURATION" \
+            -r linux-arm \
+            -o ./publish/linux-arm \
+            --self-contained true \
+            -p:PublishSingleFile=true \
+            -p:IncludeNativeLibrariesForSelfExtract=true \
+            -p:AssemblyName=${{ env.ARTIFACT_NAME }}
+          chmod +x ./publish/linux-arm/${{ env.ARTIFACT_NAME }}
+
+      - name: Add service + installer
+        run: |
+          cp ./packaging/htu21.service ./publish/linux-arm/
+          cp ./packaging/install.sh ./publish/linux-arm/
+          chmod +x ./publish/linux-arm/install.sh
+
+      - name: Package tarball
+        run: |
+          tar -C ./publish/linux-arm -czf ./htu21-linux-arm.tar.gz \
+            ${{ env.ARTIFACT_NAME }} htu21.service install.sh
+
+      - name: Create GitHub Release (auto-tag)
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ./htu21-linux-arm.tar.gz
+          tag_name: master-${{ github.run_number }}
+          name: "master build #${{ github.run_number }}"
+          target_commitish: ${{ github.sha }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
