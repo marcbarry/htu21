@@ -2,11 +2,10 @@ name: Build & Release
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
-permissions:
-  contents: read
+  permissions:
+    contents: write
 
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
@@ -15,16 +14,13 @@ env:
   ARTIFACT_NAME: htu21
 
 jobs:
-  build-release:
-    permissions:
-      contents: write
+  build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        rid: [linux-arm, linux-arm64]
+        rid: [ linux-arm, linux-arm64 ]
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
@@ -38,6 +34,7 @@ jobs:
             --self-contained true \
             -p:PublishSingleFile=true \
             -p:IncludeNativeLibrariesForSelfExtract=true \
+            -p:InvariantGlobalization=true \
             -p:AssemblyName=${{ env.ARTIFACT_NAME }}
           chmod +x ./publish/${{ matrix.rid }}/${{ env.ARTIFACT_NAME }}
 
@@ -46,18 +43,37 @@ jobs:
           cp ./packaging/htu21.service ./publish/${{ matrix.rid }}/
           cp ./packaging/install.sh ./publish/${{ matrix.rid }}/
           cp ./packaging/uninstall.sh ./publish/${{ matrix.rid }}/
-          chmod +x ./publish/${{ matrix.rid }}/install.sh
-          chmod +x ./publish/${{ matrix.rid }}/uninstall.sh
+          chmod +x ./publish/${{ matrix.rid }}/install.sh ./publish/${{ matrix.rid }}/uninstall.sh
 
       - name: Package tarball
         run: |
           mkdir -p ./staging/${{ env.ARTIFACT_NAME }}-${{ matrix.rid }}
-          cp ./publish/${{ matrix.rid }}/* ./staging/${{ env.ARTIFACT_NAME }}-${{ matrix.rid}}/
+          cp ./publish/${{ matrix.rid }}/* ./staging/${{ env.ARTIFACT_NAME }}-${{ matrix.rid }}/
           tar -C ./staging -czf ./htu21-${{ matrix.rid }}.tar.gz \
             ${{ env.ARTIFACT_NAME }}-${{ matrix.rid }}
 
-      - name: Upload artefact
+      - name: Upload artefact (${{ matrix.rid }})
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ARTIFACT_NAME }}-${{ matrix.rid }}
+          name: htu21-${{ matrix.rid }}
           path: ./htu21-${{ matrix.rid }}.tar.gz
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artefacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./dist
+
+      - name: Create GitHub Release (auto-tag)
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ./dist/**/*\.tar\.gz
+          tag_name: master-${{ github.run_number }}
+          name: "master build #${{ github.run_number }}"
+          target_commitish: ${{ github.sha }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
