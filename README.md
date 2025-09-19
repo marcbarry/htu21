@@ -32,8 +32,15 @@
 
 2. Run:
    ```bash
-   ./htu21             # listens on port 273 by default
-   # or override the port:
+   sudo ./htu21             # listens on port 273 by default
+   ```
+   Optional: allow binding to ports <1024 without sudo
+   ```bash
+   sudo setcap 'cap_net_bind_service=+ep' ./htu21
+   ./htu21
+   ```
+   Or change the port:
+   ```bash
    HTU21_PORT=8080 ./htu21
    ```
 
