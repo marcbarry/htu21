@@ -8,6 +8,7 @@ class Program
 {
     const int I2cBusId = 1;
     const int Address = 0x40;
+    const int Port = 80;
 
     static void Main()
     {
@@ -17,15 +18,17 @@ class Program
 
         // Start HTTP server
         var listener = new HttpListener();
-        listener.Prefixes.Add("http://*:5000/"); // listen on all interfaces, port 5000
+        listener.Prefixes.Add($"http://*:{Port}/"); // listen on all interfaces
         listener.Start();
-        Console.WriteLine("Listening on http://0.0.0.0:80/ ...");
+        Console.WriteLine($"Listening on http://0.0.0.0:{Port}/ ...");
 
         while (true)
         {
             var ctx = listener.GetContext();
             var req = ctx.Request;
             var res = ctx.Response;
+
+            Console.WriteLine($"{DateTime.UtcNow:O} {req.RemoteEndPoint} {req.HttpMethod} {req.Url}");
 
             var path = req.Url?.AbsolutePath ?? string.Empty;
 
