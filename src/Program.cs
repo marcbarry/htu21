@@ -9,7 +9,7 @@ class Program
 
     static void Main()
     {
-        var portEnv = Environment.GetEnvironmentVariable("PORT");
+        var portEnv = Environment.GetEnvironmentVariable("HTU21_PORT");
         int port = int.TryParse(portEnv, out var p) ? p : 273;
 
         // Create I²C device
