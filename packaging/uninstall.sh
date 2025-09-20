@@ -14,4 +14,7 @@ sudo systemctl daemon-reload
 echo "Removing installed files..."
 sudo rm -rf /opt/htu21
 
+echo "Removing htu21 user..."
+sudo userdel htu21 || true
+
 echo "htu21 service uninstalled."

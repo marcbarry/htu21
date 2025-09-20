@@ -5,8 +5,8 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=pi
-Group=pi
+User=htu21
+Group=htu21
 WorkingDirectory=/opt/htu21
 ExecStart=/opt/htu21/htu21
 Environment=HTU21_PORT=273
