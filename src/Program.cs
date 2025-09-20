@@ -37,7 +37,7 @@ class Program
                 double temp = ReadTemperature(device);
                 double hum = ReadHumidity(device);
 
-                string json = $"{{\"sensor\":\"HTU21D/SHT21\",\"temperature_c\":{temp:F2},\"humidity_percent\":{hum:F2},\"timestamp_utc\":\"{DateTime.UtcNow:O}\"}}";
+                string json = $"{{\"sensor\":\"HTU21/SHT21\",\"temperature_c\":{temp:F2},\"humidity_percent\":{hum:F2},\"timestamp_utc\":\"{DateTime.UtcNow:O}\"}}";
                 byte[] buffer = Encoding.UTF8.GetBytes(json);
                 res.ContentType = "application/json";
                 res.OutputStream.Write(buffer, 0, buffer.Length);

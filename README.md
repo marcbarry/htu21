@@ -1,6 +1,6 @@
 # htu21
 
-`htu21` Small HTTP service targeting the Raspberry Pi that reads temperature and humidity from an HTU21D/SHT21 sensor over I²C and makes it available on the network by returning JSON to a simple HTTP API.
+`htu21` Small HTTP service targeting the Raspberry Pi that reads temperature and humidity from an HTU21/SHT21 sensor over I²C and makes it available on the network by returning JSON to a simple HTTP API.
 
 Default port: **273** (configurable via `HTU21_PORT` environment variable).
 
@@ -111,7 +111,7 @@ cd htu21-linux-arm
 ```bash
 curl -s http://localhost:273/ | jq .
 # {
-#   "sensor": "HTU21D/SHT21",
+#   "sensor": "HTU21/SHT21",
 #   "temperature_c": 21.37,
 #   "humidity_percent": 48.12,
 #   "timestamp_utc": "2025-09-20T00:00:00.0000000Z"
