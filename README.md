@@ -54,11 +54,19 @@ Default port: **273** (configurable via `HTU21_PORT` environment variable).
 
 ## Install as a `systemd` service
 
+The service will be installed to `/opt/htu21` and run as a dedicated `htu21` system user.
+
 ```bash
+cd /tmp
 tar xzf htu21-linux-arm.tar.gz
 cd htu21-linux-arm
 ./install.sh
 ```
+
+The installer:
+- Creates `/opt/htu21/` directory with the binary
+- Adds `htu21` system user for running the service
+- Adds systemd service at `/etc/systemd/system/htu21.service`
 
 Check status and logs:
 
