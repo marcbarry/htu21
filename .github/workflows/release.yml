@@ -59,24 +59,33 @@ jobs:
           path: ./htu21-${{ matrix.rid }}.tar.gz
 
   release:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Download all artefacts
-        uses: actions/download-artifact@v4
-        with:
-          path: ./dist
+  needs: build
+  runs-on: ubuntu-latest
+  permissions:
+    contents: write
+  steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
 
-      - name: Create GitHub Release (auto-tag)
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            dist/**/*.tar.gz
-          tag_name: master-${{ github.run_number }}
-          name: "master build #${{ github.run_number }}"
-          target_commitish: ${{ github.sha }}
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Get version
+      id: version
+      uses: kzrnm/get-net-sdk-project-versions-action@v2
+      with:
+        proj-path: src/htu21.csproj
+
+    - name: Download all artefacts
+      uses: actions/download-artifact@v4
+      with:
+        path: ./dist
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          dist/**/*.tar.gz
+          tag_name: v${{ steps.version.outputs.version }}+${{ github.run_number }}
+          name: v${{ steps.version.outputs.version }}+${{ github.run_number }}
+        target_commitish: ${{ github.sha }}
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
