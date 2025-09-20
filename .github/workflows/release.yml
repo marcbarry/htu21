@@ -81,11 +81,8 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v${{ steps.version.outputs.version }}+${{ github.run_number }}
           files: |
             dist/**/*.tar.gz
-            tag_name: v${{ steps.version.outputs.version }}+${{ github.run_number }}
-            name: v${{ steps.version.outputs.version }}+${{ github.run_number }}
-          target_commitish: ${{ github.sha }}
-          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
