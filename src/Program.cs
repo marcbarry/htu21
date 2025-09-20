@@ -12,69 +12,68 @@ class Program
         var portEnv = Environment.GetEnvironmentVariable("HTU21_PORT");
         int port = int.TryParse(portEnv, out var p) ? p : 273;
 
-        // Create I²C device
         var settings = new I2cConnectionSettings(I2cBusId, Address);
+        
         using var device = I2cDevice.Create(settings);
 
-        // Start HTTP server
-        var listener = new HttpListener();
-        listener.Prefixes.Add($"http://*:{port}/"); // listen on all interfaces
-        listener.Start();
-        Console.WriteLine($"Listening on http://0.0.0.0:{port}/ ...");
+        var sensor = new Sht21(device);
 
-        while (true)
+        using var listener = new HttpListener();
+        listener.Prefixes.Add($"http://*:{port}/");
+        listener.Start();
+
+        Console.WriteLine($"Listening on http://0.0.0.0:{port}/");
+
+        for (;;)
         {
             var ctx = listener.GetContext();
             var req = ctx.Request;
             var res = ctx.Response;
 
-            Console.WriteLine($"{DateTime.UtcNow:O} {req.RemoteEndPoint} {req.HttpMethod} {req.Url}");
-
-            var path = req.Url?.AbsolutePath ?? string.Empty;
-
-            if (path == "/")
+            try
             {
-                double temp = ReadTemperature(device);
-                double hum = ReadHumidity(device);
+                switch (req.Url?.AbsolutePath)
+                {
+                    case "/":
+                    {
+                        double tempC = sensor.ReadTemperatureC();
+                        double rh = sensor.ReadHumidityPercent();
 
-                string json = $"{{\"sensor\":\"HTU21/SHT21\",\"temperature_c\":{temp:F2},\"humidity_percent\":{hum:F2},\"timestamp_utc\":\"{DateTime.UtcNow:O}\"}}";
-                byte[] buffer = Encoding.UTF8.GetBytes(json);
-                res.ContentType = "application/json";
-                res.OutputStream.Write(buffer, 0, buffer.Length);
-            }
-            else if (path == "/health")
-            {
-                string json = "{\"status\":\"ok\"}";
-                byte[] buffer = Encoding.UTF8.GetBytes(json);
-                res.ContentType = "application/json";
-                res.OutputStream.Write(buffer, 0, buffer.Length);
-            }
-            else
-            {
-                res.StatusCode = 404;
-            }
+                        var payload = $"{{\"sensor\":\"HTU21/SHT21\",\"temperature_c\":{tempC:F2},\"humidity_percent\":{rh:F2},\"timestamp_utc\":\"{DateTime.UtcNow:O}\"}}";
 
-            res.OutputStream.Close();
+                        WriteJson(res, 200, payload);
+
+                        break;
+                    }
+                    case "/health":
+                        WriteJson(res, 200, "{\"status\":\"ok\"}");
+                        break;
+
+                    default:
+                        res.StatusCode = 404;
+                        res.OutputStream.Close();
+                        break;
+                }
+            }
+            catch (InvalidOperationException ex) // CRC or data integrity issues from Sht21
+            {
+                WriteJson(res, 503, $"{{\"status\":\"unavailable\",\"error\":\"{Escape(ex.Message)}\"}}");
+            }
+            catch (Exception ex)
+            {
+                WriteJson(res, 500, $"{{\"status\":\"error\",\"error\":\"{Escape(ex.Message)}\"}}");
+            }
         }
     }
 
-    static double ReadTemperature(I2cDevice device)
+    static void WriteJson(HttpListenerResponse res, int status, string json)
     {
-        device.WriteByte(0xF3);
-        Thread.Sleep(50);
-        Span<byte> data = stackalloc byte[2];
-        device.Read(data);
-        int raw = (data[0] << 8) | data[1];
-        return -46.85 + (175.72 * raw / 65536.0);
+        byte[] buffer = Encoding.UTF8.GetBytes(json);
+        res.StatusCode = status;
+        res.ContentType = "application/json";
+        res.OutputStream.Write(buffer, 0, buffer.Length);
+        res.OutputStream.Close();
     }
 
-    static double ReadHumidity(I2cDevice device)
-    {
-        device.WriteByte(0xF5);
-        Thread.Sleep(50);
-        Span<byte> data = stackalloc byte[2];
-        device.Read(data);
-        int raw = (data[0] << 8) | data[1];
-        return -6.0 + (125.0 * raw / 65536.0);
-    }
+    static string Escape(string s) => s.Replace("\\", "\\\\").Replace("\"", "\\\"");
 }
