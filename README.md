@@ -18,9 +18,8 @@ Default port: **273** (configurable via `HTU21_PORT` environment variable).
   - SDA → GPIO2 (pin 3)
   - SCL → GPIO3 (pin 5)
 
-![HTU21 sensor wiring diagram](htu21.jpg)
+<img src="htu21.jpg" width="40%" alt="HTU21 sensor wiring diagram">
 
----
 
 ## Quick run (no install)
 
@@ -120,3 +119,9 @@ curl -s http://localhost:273/ | jq .
 curl -s http://localhost:273/health
 # {"status":"ok"}
 ```
+
+## HTU21 Docker Observability Stack
+
+A simple Docker-based observability pipeline for ingesting, storing, and visualising HTU21 sensor data is available in `./docker-observability-stack`
+
+<img src="grafana-screenshot.png" width="70%" alt="HTU21 Grafana observability stack">
