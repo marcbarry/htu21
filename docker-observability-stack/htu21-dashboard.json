@@ -1,0 +1,35 @@
+{
+  "id": null,
+  "uid": "htu21",
+  "title": "HTU21 Sensor",
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Temperature (°C)",
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 8 },
+      "datasource": { "type": "influxdb", "uid": "influxdb" },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"sensors\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"htu21\" and r._field == \"temperature_c\")"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Humidity (%)",
+      "gridPos": { "x": 0, "y": 8, "w": 24, "h": 8 },
+      "datasource": { "type": "influxdb", "uid": "influxdb" },
+      "targets": [
+        {
+          "refId": "B",
+          "query": "from(bucket: \"sensors\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"htu21\" and r._field == \"humidity_percent\")"
+        }
+      ]
+    }
+  ]
+}
