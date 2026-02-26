@@ -2,8 +2,10 @@
 
 This directory contains a minimal Docker-based observability pipeline for ingesting, storing, and visualising HTU21 sensor data.
 
-- It does not run the sensor service itself.
-- It ingests HTTP JSON output from an existing sensor endpoint.
+- This Docker stack does **not** run the sensor service itself, just the observability stack.
+- The stack ingests HTTP JSON output from an existing sensor endpoint, and assumes network line-of-sight to the htu21 service's api.
+
+<img src="grafana-screenshot.png" alt="HTU21 Grafana observability stack">
 
 ## Components
 
