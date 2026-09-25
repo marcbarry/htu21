@@ -52,3 +52,11 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# Workspace-local portable CAD tools and Python dependencies
+.tools/
+
+# CAD renderings are versioned; transient diagnostics are reproducible
+enclosure/**/renders/validation.json
+enclosure/**/renders/check_*.stl
+enclosure/**/__pycache__/

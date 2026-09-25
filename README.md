@@ -8,6 +8,15 @@ Default port: **273** (configurable via `HTU21_PORT` environment variable).
   - `GET /` → `{"temperature_c":..,"humidity_percent":..,"timestamp_utc":".."}`
   - `GET /health` → `{"status":"ok"}`
 
+## 3D-printable enclosure
+
+The Raspberry Pi 3 B+ snap-lid case and simple upright GY-21 sensor post
+are in [enclosure/](enclosure/README.md), including editable OpenSCAD, current STLs,
+rendered previews and print/assembly instructions. Start with
+[sensor_mount_test.stl](enclosure/rpi3bplus/v2/stl/sensor_mount_test.stl) to test the lid socket
+and PCB snap lug. **The sensor hole diameter and position are provisional; measure
+them and update the SCAD before the final print.**
+
 ## Prerequisites
 
 - Raspberry Pi with I²C enabled: (`sudo raspi-config` → *Interface Options* → *I2C* → Enable)
